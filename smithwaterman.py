@@ -55,8 +55,8 @@ def valoresIguais(listaValores):
                 listaIguais.append(listaValores[indice])
     return listaIguais
 
-#Código de alinhamento de sequencias Smith-Waterman.
-def smithWaterman(sequenciaUm, sequenciaDois, match, mismatch, gap):
+#Preenchimento da matriz de scores
+def computaMatriz(sequenciaUm, sequenciaDois, match, mismatch, gap):
     #Montagem da matriz de scores.
     sequenciaUm = sequenciaUm[::-1]
     matriz, matrizCaminho = montaMatriz(sequenciaUm, sequenciaDois, gap)
@@ -66,17 +66,15 @@ def smithWaterman(sequenciaUm, sequenciaDois, match, mismatch, gap):
             score_match, gap_esquerda, gap_baixo, score_mismatch = float('-inf'), float('-inf'), float('-inf'), float('-inf')
             if sequenciaUm[i] == sequenciaDois[j - 1]:
                 score_match = matriz[i + 1][j - 1] + match
-            
             score_mismatch = matriz[i + 1][j - 1] + mismatch
             gap_esquerda = matriz[i][j - 1] + gap
             gap_baixo = matriz[i + 1][j] + gap
-
+            
             anterior_match = matriz[i + 1][j - 1]
             anterior_mismatch = matriz[i + 1][j - 1]
             anterior_esquerda = matriz[i][j - 1]
             anterior_baixo = matriz[i + 1][j]
 
-            #print(score_match, score_mismatch, gap_esquerda, gap_baixo)
             dados = [['di',anterior_match, score_match],['di',anterior_mismatch, score_mismatch],['es',anterior_esquerda, gap_esquerda],['ba', anterior_baixo, gap_baixo]]
             nIguais = valoresIguais(dados)
             
@@ -89,18 +87,13 @@ def smithWaterman(sequenciaUm, sequenciaDois, match, mismatch, gap):
             indice = valores.index(max(valores))
             matriz[i][j] = valores[indice]
             matrizCaminho[i][j] = direcoes[indice]
+    return matrizCaminho, matriz
 
-
-    #BackTracing da matriz de scores.
+#BackTracing da matriz de scores.
+def backTracing(matrizCaminho, matriz, sequenciaUm, sequenciaDois):
+    #Alinhamento global
     maior_score = matriz[0][-1]
-    print(matriz)
     i, j = 0, matriz.shape[1]-1
-    
-    print(matrizCaminho)
-    
-    with open('matriz.txt', 'w') as f:
-        f.write(str(matriz))
-    #Alinhamento das sequências.
     palavra1, palavra2 = [], []
     while True:
         if matrizCaminho[i][j] == 'di':
@@ -123,15 +116,19 @@ def smithWaterman(sequenciaUm, sequenciaDois, match, mismatch, gap):
             break
             
     #Inversão da ordem ou sentido das sequências.
-    seq1 = ''.join(palavra1)[::-1]
+    seq1 = ''.join(palavra1)[:]
     seq2 = ''.join(palavra2)[::-1]
 
     return seq1, seq2, maior_score
 
-#Chamada do programa.
-info = abreInput('input.txt')
-seq1, seq2, maior_score = smithWaterman(info['sequenciaUm'], info['sequenciaDois'], int(info['match']), info['mismatch'], info['gap'])
-info['sequenciaUm'] = seq1
-info['sequenciaDois'] = seq2
-info['score'] = int(maior_score)
-gravaOutput(info, 'output.txt')
+#Chamada do programa Smith Waterman.
+def smithWaterman():
+    info = abreInput('input.txt')
+    matrizCaminho, matriz = computaMatriz(info['sequenciaUm'], info['sequenciaDois'], int(info['match']), info['mismatch'], info['gap'])
+    seq1, seq2, maior_score = backTracing(matrizCaminho, matriz, info['sequenciaUm'], info['sequenciaDois'])
+    info['sequenciaUm'] = seq1
+    info['sequenciaDois'] = seq2
+    info['score'] = int(maior_score)
+    gravaOutput(info, 'output.txt')
+
+smithWaterman()

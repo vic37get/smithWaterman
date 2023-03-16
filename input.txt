@@ -1,5 +1,5 @@
-AGAGCA
-AGA
+ATCG
+TCG
 +1
 -1
 -2
