@@ -89,57 +89,39 @@ def smithWaterman(sequenciaUm, sequenciaDois, match, mismatch, gap):
             indice = valores.index(max(valores))
             matriz[i][j] = valores[indice]
             matrizCaminho[i][j] = direcoes[indice]
-    #print(matrizCaminho)
-
-    #MATRIZ CAMINHO MONTADA, SO FALTA PERCORRER COM BASE NAS DIREÇÕES
 
 
     #BackTracing da matriz de scores.
     maior_score = matriz[0][-1]
-    print(maior_score)
     print(matriz)
     i, j = 0, matriz.shape[1]-1
-    print(matriz[i][j])
+    
+    print(matrizCaminho)
     
     with open('matriz.txt', 'w') as f:
         f.write(str(matriz))
-
     #Alinhamento das sequências.
     palavra1, palavra2 = [], []
-    while i != len(sequenciaUm) or j != 0:
-
-        if j == 0:
-            palavra1.append(sequenciaUm[i])
-            palavra2.append('-')
-            i+=1
-        
-        elif i == len(sequenciaUm):
-            palavra1.append('-')
-            palavra2.append(sequenciaDois[j - 1])
-            j-=1
-
-        elif matriz[i][j] == matriz[i + 1][j - 1] + match:
-            palavra1.append(sequenciaUm[i])
-            palavra2.append(sequenciaDois[j-1])
-            i+=1
-            j-=1
-        
-        elif matriz[i][j] == matriz[i + 1][j - 1] + mismatch:
+    while True:
+        if matrizCaminho[i][j] == 'di':
             palavra1.append(sequenciaUm[i])
             palavra2.append(sequenciaDois[j-1])
             i+=1
             j-=1
             
-        elif matriz[i][j] == matriz[i + 1][j] + gap:
+        elif matrizCaminho[i][j] == 'ba':
             palavra1.append(sequenciaUm[i])
             palavra2.append('-')
             i+=1
-            
-        elif matriz[i][j] == matriz[i][j-1] + gap:
-            palavra2.append(sequenciaDois[j-1])
+        
+        elif matrizCaminho[i][j] == 'es':
             palavra1.append('-')
+            palavra2.append(sequenciaDois[j-1])
             j-=1
-
+        
+        elif matrizCaminho[i][j] == '':
+            break
+            
     #Inversão da ordem ou sentido das sequências.
     seq1 = ''.join(palavra1)[::-1]
     seq2 = ''.join(palavra2)[::-1]
